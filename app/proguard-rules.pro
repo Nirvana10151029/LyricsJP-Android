@@ -1,0 +1,2 @@
+-keep class jp.lyricsjp.app.NowPlayingListenerService { *; }
+-keep class jp.lyricsjp.app.LyricsWidgetProvider { *; }

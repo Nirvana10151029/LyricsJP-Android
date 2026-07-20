@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="500" viewBox="0 0 1024 500">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#080d16"/>
+      <stop offset="0.58" stop-color="#111b2d"/>
+      <stop offset="1" stop-color="#321c3d"/>
+    </linearGradient>
+    <radialGradient id="glow">
+      <stop offset="0" stop-color="#7cc7ff" stop-opacity=".32"/>
+      <stop offset="1" stop-color="#7cc7ff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1024" height="500" fill="url(#bg)"/>
+  <circle cx="820" cy="80" r="330" fill="url(#glow)"/>
+  <g transform="translate(100 78)">
+    <rect width="344" height="344" rx="76" fill="#121a29" stroke="#7cc7ff" stroke-opacity=".25" stroke-width="2"/>
+    <path d="M104 74v148c0 35-25 55-55 55-25 0-43-14-43-36 0-27 25-47 60-47 7 0 13 1 20 2V74h18z" fill="#7cc7ff" transform="translate(60 0)"/>
+    <rect x="168" y="84" width="116" height="20" rx="10" fill="#f5f7fa"/>
+    <rect x="168" y="130" width="94" height="16" rx="8" fill="#aeb8c8"/>
+    <rect x="168" y="170" width="116" height="16" rx="8" fill="#aeb8c8"/>
+    <path d="M172 232h48l-24 54z" fill="#7cc7ff"/>
+    <path d="M238 232h52v18h-52zm8 37h44v18h-44z" fill="#f5f7fa"/>
+  </g>
+  <g font-family="sans-serif" fill="#f5f7fa">
+    <text x="516" y="185" font-size="70" font-weight="700">LyricsJP</text>
+    <text x="520" y="245" font-size="27" fill="#b9c5d7">Lyrics, naturally translated.</text>
+    <text x="520" y="310" font-size="20" fill="#7cc7ff">Spotify  ·  Apple Music  ·  Widget</text>
+  </g>
+</svg>
