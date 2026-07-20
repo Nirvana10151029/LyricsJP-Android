@@ -10,6 +10,20 @@ import android.widget.RemoteViews;
 
 public final class LyricsWidgetProvider extends AppWidgetProvider {
     @Override
+    public void onEnabled(Context context) {
+        super.onEnabled(context);
+        updateAll(context, null, null);
+    }
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        super.onReceive(context, intent);
+        if (AppState.ACTION_CHANGED.equals(intent.getAction())) {
+            updateAll(context, null, null);
+        }
+    }
+
+    @Override
     public void onUpdate(Context context, AppWidgetManager manager, int[] appWidgetIds) {
         TrackInfo track = AppState.loadTrack(context);
         LyricsDocument lyrics = AppState.loadLyrics(context);
@@ -22,8 +36,7 @@ public final class LyricsWidgetProvider extends AppWidgetProvider {
         int[] ids = manager.getAppWidgetIds(component);
         TrackInfo track = trackOverride != null ? trackOverride : AppState.loadTrack(context);
         LyricsDocument lyrics = lyricsOverride != null ? lyricsOverride : AppState.loadLyrics(context);
-        RemoteViews views = buildViews(context, track, lyrics);
-        for (int id : ids) manager.updateAppWidget(id, views);
+        for (int id : ids) manager.updateAppWidget(id, buildViews(context, track, lyrics));
         return activeLineIndex(track, lyrics);
     }
 

@@ -4,8 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/widget_background"
+    android:gravity="center_vertical"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="12dp">
 
     <TextView
         android:id="@+id/widget_title"
@@ -24,27 +25,28 @@
         android:layout_height="wrap_content"
         android:ellipsize="end"
         android:maxLines="1"
+        android:text="曲を待っています"
         android:textColor="#AEB8C8"
         android:textSize="11sp" />
-
-    <Space android:layout_width="1dp" android:layout_height="10dp" />
 
     <TextView
         android:id="@+id/widget_original"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:maxLines="2"
+        android:text="SpotifyまたはApple Musicを再生してください"
         android:textColor="#AEB8C8"
         android:textSize="12sp" />
 
     <TextView
         android:id="@+id/widget_translation"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="wrap_content"
         android:gravity="top"
-        android:maxLines="3"
+        android:maxLines="2"
         android:paddingTop="4dp"
+        android:text="歌詞を待っています"
         android:textColor="#FFFFFF"
         android:textSize="15sp"
         android:textStyle="bold" />
@@ -53,6 +55,8 @@
         android:id="@+id/widget_footer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:text="LyricsJP"
         android:textColor="#8792A6"
         android:textSize="9sp" />
 </LinearLayout>

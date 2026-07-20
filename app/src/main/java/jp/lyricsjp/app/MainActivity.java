@@ -9,9 +9,17 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.Settings;
+import android.text.Layout;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -19,6 +27,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,12 +40,25 @@ public final class MainActivity extends Activity {
     private TextView currentArtist;
     private TextView processStatus;
     private TextView lyricsText;
+    private ScrollView mainScroll;
     private Spinner providerSpinner;
     private EditText apiKeyInput;
     private EditText modelInput;
     private CheckBox autoTranslate;
     private CheckBox deepLFree;
     private boolean receiverRegistered;
+    private final Handler uiHandler = new Handler(Looper.getMainLooper());
+    private int[] lyricOffsets = new int[0];
+    private int renderedLyricsSignature;
+    private int lastActiveLine = Integer.MIN_VALUE;
+
+    private final Runnable lyricTicker = new Runnable() {
+        @Override
+        public void run() {
+            updateActiveLyric();
+            uiHandler.postDelayed(this, 500);
+        }
+    };
 
     private final BroadcastReceiver stateReceiver = new BroadcastReceiver() {
         @Override
@@ -62,6 +84,14 @@ public final class MainActivity extends Activity {
         super.onResume();
         updateAccessStatus();
         renderState();
+        uiHandler.removeCallbacks(lyricTicker);
+        uiHandler.post(lyricTicker);
+    }
+
+    @Override
+    protected void onPause() {
+        uiHandler.removeCallbacks(lyricTicker);
+        super.onPause();
     }
 
     @Override
@@ -71,6 +101,7 @@ public final class MainActivity extends Activity {
     }
 
     private void bindViews() {
+        mainScroll = findViewById(R.id.main_scroll);
         accessStatus = findViewById(R.id.access_status);
         currentTrack = findViewById(R.id.current_track);
         currentArtist = findViewById(R.id.current_artist);
@@ -221,6 +252,9 @@ public final class MainActivity extends Activity {
             currentTrack.setText("曲を待っています");
             currentArtist.setText("SpotifyまたはApple Musicを再生してください");
             lyricsText.setText("");
+            lyricOffsets = new int[0];
+            renderedLyricsSignature = 0;
+            lastActiveLine = Integer.MIN_VALUE;
             return;
         }
         currentTrack.setText(track.title);
@@ -230,15 +264,88 @@ public final class MainActivity extends Activity {
         currentArtist.setText(detail);
         if (lyrics == null) {
             lyricsText.setText("");
+            lyricOffsets = new int[0];
+            renderedLyricsSignature = 0;
+            lastActiveLine = Integer.MIN_VALUE;
             return;
         }
-        StringBuilder body = new StringBuilder();
-        for (LyricsDocument.Line line : lyrics.lines) {
+        int activeLine = LyricsWidgetProvider.activeLineIndex(track, lyrics);
+        renderLyrics(lyrics, activeLine, false);
+    }
+
+    private void updateActiveLyric() {
+        TrackInfo track = AppState.loadTrack(this);
+        LyricsDocument lyrics = AppState.loadLyrics(this);
+        if (track == null || lyrics == null || lyrics.lines.isEmpty()) return;
+        int activeLine = LyricsWidgetProvider.activeLineIndex(track, lyrics);
+        int signature = lyricsSignature(lyrics);
+        if (signature != renderedLyricsSignature || activeLine != lastActiveLine) {
+            renderLyrics(lyrics, activeLine, activeLine != lastActiveLine);
+        }
+    }
+
+    private void renderLyrics(LyricsDocument lyrics, int activeLine, boolean scrollToLine) {
+        SpannableStringBuilder body = new SpannableStringBuilder();
+        lyricOffsets = new int[lyrics.lines.size()];
+        java.util.Arrays.fill(lyricOffsets, -1);
+        int activeStart = -1;
+        int activeEnd = -1;
+
+        for (int i = 0; i < lyrics.lines.size(); i++) {
+            LyricsDocument.Line line = lyrics.lines.get(i);
             if (line.original.isEmpty()) continue;
+            lyricOffsets[i] = body.length();
+            if (i == activeLine) activeStart = body.length();
             body.append(line.original).append('\n');
             if (!line.translation.isEmpty()) body.append(line.translation).append('\n');
+            if (i == activeLine) activeEnd = body.length();
             body.append('\n');
         }
-        lyricsText.setText(body.toString().trim());
+
+        if (body.length() > 0 && body.charAt(body.length() - 1) == '\n') {
+            body.delete(body.length() - 1, body.length());
+        }
+        if (activeStart >= 0 && activeEnd > activeStart) {
+            body.setSpan(
+                    new ForegroundColorSpan(getColor(R.color.primary)),
+                    activeStart,
+                    Math.min(activeEnd, body.length()),
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            );
+            body.setSpan(
+                    new StyleSpan(Typeface.BOLD),
+                    activeStart,
+                    Math.min(activeEnd, body.length()),
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            );
+        }
+        lyricsText.setText(body);
+        renderedLyricsSignature = lyricsSignature(lyrics);
+        int previousActiveLine = lastActiveLine;
+        lastActiveLine = activeLine;
+        if (scrollToLine && activeLine >= 0 && activeLine != previousActiveLine) {
+            lyricsText.post(() -> scrollToLyric(activeLine));
+        }
+    }
+
+    private void scrollToLyric(int index) {
+        if (index < 0 || index >= lyricOffsets.length || lyricOffsets[index] < 0) return;
+        Layout layout = lyricsText.getLayout();
+        if (layout == null || lyricsText.length() == 0) return;
+        int offset = Math.min(lyricOffsets[index], lyricsText.length() - 1);
+        int textLine = layout.getLineForOffset(offset);
+        int targetY = lyricsText.getTop() + layout.getLineTop(textLine) - mainScroll.getHeight() / 3;
+        mainScroll.smoothScrollTo(0, Math.max(0, targetY));
+    }
+
+    private int lyricsSignature(LyricsDocument lyrics) {
+        int result = lyrics.synced ? 1 : 0;
+        result = 31 * result + lyrics.provider.hashCode();
+        for (LyricsDocument.Line line : lyrics.lines) {
+            result = 31 * result + Long.hashCode(line.timeMs);
+            result = 31 * result + line.original.hashCode();
+            result = 31 * result + line.translation.hashCode();
+        }
+        return result;
     }
 }
