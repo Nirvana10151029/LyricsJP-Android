@@ -215,7 +215,7 @@ public final class MainActivity extends Activity {
     private void showNotificationAccessDisclosure() {
         new AlertDialog.Builder(this)
                 .setTitle("通知へのアクセスについて")
-                .setMessage("曲の切り替わりを自動検知するため、通知へのアクセスを使用します。SpotifyとApple Musicの曲名・アーティスト・再生状態だけを処理し、他の通知内容は保存・送信しません。曲情報は歌詞検索のためLRCLIBへ送信されます。")
+                .setMessage("曲の切り替わりを自動検知するため、通知へのアクセスを使用します。SpotifyとApple Musicの曲名・アーティスト・再生状態だけを処理し、他の通知内容は保存・送信しません。曲情報は歌詞検索のためLRCLIBへ送信され、見つからない場合はLyrics.ovhへ送信されます。")
                 .setNegativeButton("キャンセル", null)
                 .setPositiveButton("設定を開く", (dialog, which) ->
                         startActivity(new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)))

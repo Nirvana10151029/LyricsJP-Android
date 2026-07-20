@@ -42,7 +42,7 @@ public final class HttpClient {
         connection.setConnectTimeout(12_000);
         connection.setReadTimeout(30_000);
         connection.setRequestProperty("Accept", "application/json");
-        connection.setRequestProperty("User-Agent", "LyricsJP-Android/0.1.0");
+        connection.setRequestProperty("User-Agent", "LyricsJP-Android/0.1.2 (https://github.com/Nirvana10151029/LyricsJP-Android)");
         for (Map.Entry<String, String> header : headers.entrySet()) {
             connection.setRequestProperty(header.getKey(), header.getValue());
         }

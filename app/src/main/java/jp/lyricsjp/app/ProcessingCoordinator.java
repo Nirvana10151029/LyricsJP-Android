@@ -39,11 +39,14 @@ public final class ProcessingCoordinator {
             LyricsDocument lyrics = new LyricsRepository().find(track);
             if (!isStillCurrent(context, track)) return;
             AppState.saveLyrics(context, lyrics);
-            AppState.setStatus(context, lyrics.synced ? "同期歌詞を取得しました" : "歌詞を取得しました");
+            String foundStatus = lyrics.synced
+                    ? "同期歌詞を取得しました（" + lyrics.provider + "）"
+                    : "歌詞を取得しました（" + lyrics.provider + "）";
+            AppState.setStatus(context, foundStatus);
 
             if ((AppState.isAutoTranslate(context) || force)
                     && !SecretStore.hasApiKey(context, AppState.getProvider(context))) {
-                AppState.setStatus(context, "歌詞を取得しました。翻訳APIキーを設定してください。");
+                AppState.setStatus(context, foundStatus + "。翻訳APIキーを設定してください。");
                 return;
             }
             if (AppState.isAutoTranslate(context) || force) {

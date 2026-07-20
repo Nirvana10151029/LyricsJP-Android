@@ -1,12 +1,13 @@
 # LyricsJP for Android
 
-SpotifyまたはApple Musicで再生中の曲を自動検知し、LRCLIBの歌詞と日本語訳をアプリ／ホーム画面ウィジェットへ表示するAndroidアプリです。
+SpotifyまたはApple Musicで再生中の曲を自動検知し、歌詞と日本語訳をアプリ／ホーム画面ウィジェットへ表示するAndroidアプリです。
 
 ## 主な機能
 
 - Spotify／Apple Musicの曲変更を自動検知
 - Spotify Developer登録や曲の共有操作は不要
-- LRCLIBの同期歌詞を優先し、曲名・アーティスト・長さで誤一致を抑制
+- LRCLIBの同期歌詞を優先し、表記違いを含む複数検索で誤一致と取りこぼしを抑制
+- LRCLIBで見つからない場合はLyrics.ovhの通常歌詞へ自動切り替え
 - GPT／Gemini／DeepLを切り替え可能
 - 曲が変わると歌詞取得と翻訳を自動実行
 - 同期歌詞は再生位置に合わせてウィジェットを行送り
