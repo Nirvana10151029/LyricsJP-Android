@@ -17,7 +17,7 @@ LyricsJPは、SpotifyまたはApple Musicで再生中の曲を自動で検知し
 主な機能：
 
 - Spotify／Apple Musicの現在曲を自動検知
-- 同期歌詞を優先し、見つからない場合は別の歌詞サービスへ自動切り替え
+- 同期歌詞を優先し、見つからない場合は複数の歌詞サービスを横断検索
 - GPT／Gemini／DeepLから翻訳方法を選択
 - 再生位置に合わせてウィジェットの歌詞を更新
 - APIキーは端末内で暗号化
@@ -25,4 +25,4 @@ LyricsJPは、SpotifyまたはApple Musicで再生中の曲を自動で検知し
 
 本アプリを利用するには、選択した翻訳サービスのAPIキーが必要です。各翻訳APIの利用料金や上限は、それぞれのサービスの契約に基づきます。
 
-LyricsJPはSpotify、Apple、OpenAI、Google、DeepL、LRCLIB、Lyrics.ovhの公式アプリではありません。各サービス名は識別目的で使用しています。
+LyricsJPはSpotify、Apple、OpenAI、Google、DeepL、LRCLIB、lrc mux、Lyrics.ovhの公式アプリではありません。各サービス名は識別目的で使用しています。

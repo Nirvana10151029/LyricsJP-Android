@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 
 public final class LyricsRepository {
     private static final String BASE_URL = "https://lrclib.net/api";
+    private static final String LRC_MUX_URL = "https://lrcmux.dev/get";
     private static final String LYRICS_OVH_URL = "https://api.lyrics.ovh/v1";
     private static final Pattern LRC_TIME = Pattern.compile("\\[(\\d{1,2}):(\\d{2})(?:[.:](\\d{1,3}))?]");
 
@@ -52,14 +53,50 @@ public final class LyricsRepository {
                 bestScore = candidateScore;
             }
         }
+        LyricsDocument plainFallback = null;
         if (best != null && bestScore >= 55) {
             LyricsDocument parsed = parseEntry(best);
-            if (parsed != null) return parsed;
+            if (parsed != null && parsed.synced) return parsed;
+            plainFallback = parsed;
         }
+
+        LyricsDocument muxLyrics = fetchLrcMux(track, simpleTitle, simpleArtist);
+        if (muxLyrics != null) return muxLyrics;
+        if (plainFallback != null) return plainFallback;
 
         LyricsDocument fallback = fetchLyricsOvh(track, simpleTitle, simpleArtist);
         if (fallback != null) return fallback;
         throw new Exception("複数の歌詞サービスで検索しましたが、歌詞が見つかりませんでした。");
+    }
+
+    private LyricsDocument fetchLrcMux(TrackInfo track, String simpleTitle, String simpleArtist) {
+        LyricsDocument exact = fetchLrcMuxOnce(track.title, track.artist, track.album, track.durationMs);
+        if (exact != null) return exact;
+        if (simpleTitle.equals(track.title) && simpleArtist.equals(track.artist)) return null;
+        return fetchLrcMuxOnce(simpleTitle, simpleArtist, "", track.durationMs);
+    }
+
+    private LyricsDocument fetchLrcMuxOnce(
+            String title,
+            String artist,
+            String album,
+            long durationMs
+    ) {
+        if (title.trim().isEmpty() || artist.trim().isEmpty()) return null;
+        try {
+            StringBuilder url = new StringBuilder(LRC_MUX_URL)
+                    .append("?artist=").append(encode(artist))
+                    .append("&title=").append(encode(title))
+                    .append("&level=word&format=lrc");
+            if (!album.trim().isEmpty()) url.append("&album=").append(encode(album));
+            if (durationMs > 0) url.append("&duration=").append(Math.round(durationMs / 1000.0));
+            HttpClient.Response response = HttpClient.get(url.toString());
+            if (!response.isSuccessful() || response.body.trim().isEmpty()) return null;
+            List<LyricsDocument.Line> lines = parseLrc(response.body);
+            return lines.isEmpty() ? null : new LyricsDocument(true, "lrc mux 同期歌詞", lines);
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 
     private void searchStructured(Map<String, JSONObject> candidates, String title, String artist) {
